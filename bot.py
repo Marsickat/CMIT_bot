@@ -27,6 +27,7 @@ async def main():
 
     # Подключение мидлварей
     # dp.update.middleware(mw.DatabaseMiddleware())
+    # dp.callback_query.middleware(mw.CheckRequestMiddleware())
 
     # Установка команд в меню
     await utils.set_commands(bot)

@@ -26,5 +26,6 @@ class RequestModel(BaseModel):
     user: Mapped["UserModel"] = relationship(back_populates="requests", uselist=False)
     user_fk: Mapped[int] = mapped_column(ForeignKey("Users.user_id"))
     description: Mapped[str] = mapped_column()
+    status: Mapped[str] = mapped_column()
     creation_time: Mapped[datetime] = mapped_column(default=datetime.now())
     completion_time: Mapped[datetime] = mapped_column(nullable=True)

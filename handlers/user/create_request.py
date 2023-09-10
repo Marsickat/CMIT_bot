@@ -46,8 +46,8 @@ async def process_confirm_yes(message: Message, bot: Bot, state: FSMContext, ses
     data = await state.get_data()
     await state.clear()
     await orm.add_request(message.from_user.id, data["description"], sessionmaker)
-    request = await orm.get_requests(message.from_user.id, sessionmaker)
-    await message.answer(f"Ваша заявка создана под номером <b>{request.request_id}</b>",
+    requests = await orm.get_requests(message.from_user.id, sessionmaker)
+    await message.answer(f"Ваша заявка создана под номером <b>{requests[-1].request_id}</b>",
                          reply_markup=ReplyKeyboardRemove())
     await send_request(bot, message.from_user.id, sessionmaker)
 
