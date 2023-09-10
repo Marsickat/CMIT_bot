@@ -13,4 +13,7 @@ class DatabaseMiddleware(BaseMiddleware):
                        data: Dict[str, Any]) -> Any:
         async with AsyncSession(data["async_engine"]) as session:
             data["session"] = session
+            tg_id = data["event_from_user"].id
+            user = (await session.execute(select(UserModel).where(UserModel.user_id == tg_id))).scalar_one_or_none()
+            data["user"] = user
             return await handler(event, data)
