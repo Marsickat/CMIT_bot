@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
-from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 
@@ -17,7 +16,7 @@ async def main():
     # Инициализация
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
-    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode=ParseMode.HTML)
+    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode="HTML")
 
     # Выбор хранилища
     dp = Dispatcher(storage=MemoryStorage())
@@ -27,7 +26,7 @@ async def main():
     dp.include_router(handlers.router)
 
     # Подключение мидлварей
-    dp.update.middleware(mw.DatabaseMiddleware())
+    # dp.update.middleware(mw.DatabaseMiddleware())
 
     # Установка команд в меню
     await utils.set_commands(bot)
@@ -41,7 +40,7 @@ async def main():
 
     # Запуск
     await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot, async_engine=db.async_engine)
+    await dp.start_polling(bot, sessionmaker=db.async_sessionmaker)
 
 
 if __name__ == '__main__':

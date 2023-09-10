@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command, or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 import keyboards as kb
 from database import orm
@@ -46,13 +46,13 @@ async def process_department(message: Message, state: FSMContext):
 
 
 @router.message(ChangeUserdataState.confirm, F.text.casefold() == "да")
-async def process_confirm_yes(message: Message, state: FSMContext, session: AsyncSession):
+async def process_confirm_yes(message: Message, state: FSMContext, sessionmaker: async_sessionmaker):
     data = await state.get_data()
     await state.clear()
     await orm.change_userdata(message.from_user.id,
                               data["name"],
                               data["department"],
-                              session)
+                              sessionmaker)
     await message.answer("Спасибо! Я запомнил.",
                          reply_markup=ReplyKeyboardRemove())
 

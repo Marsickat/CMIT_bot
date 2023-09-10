@@ -2,18 +2,18 @@ from aiogram import Router, F
 from aiogram.filters import CommandStart, or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 import keyboards as kb
 from database import orm
-from database.models import UserModel
 from states.register_state import RegisterState
 
 router = Router()
 
 
 @router.message(CommandStart())
-async def cmd_start(message: Message, state: FSMContext, user: UserModel):
+async def cmd_start(message: Message, state: FSMContext, sessionmaker: async_sessionmaker):
+    user = await orm.get_user(message.from_user.id, sessionmaker)
     if user is None:
         await state.set_state(RegisterState.name)
         await message.answer("Здравствуйте, Вас приветствует бот для принятия заявок в ЦМИТ.\n\n"
@@ -58,7 +58,7 @@ async def process_department(message: Message, state: FSMContext):
 
 
 @router.message(RegisterState.confirm, F.text.casefold() == "да")
-async def process_confirm_yes(message: Message, state: FSMContext, session: AsyncSession):
+async def process_confirm_yes(message: Message, state: FSMContext, sessionmaker: async_sessionmaker):
     data = await state.get_data()
     await state.clear()
     await orm.add_user(message.from_user.id,
@@ -67,7 +67,7 @@ async def process_confirm_yes(message: Message, state: FSMContext, session: Asyn
                        message.from_user.last_name,
                        data["name"],
                        data["department"],
-                       session)
+                       sessionmaker)
     await message.answer("Спасибо! Я запомнил.\n\n",
                          reply_markup=ReplyKeyboardRemove())
 
