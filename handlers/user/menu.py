@@ -8,5 +8,5 @@ router = Router()
 @router.message(Command("menu"))
 async def cmd_menu(message: Message):
     await message.answer("Список доступных команд:\n\n"
-                         "/create_request - Создать заявку"
+                         "/create_request - Создать заявку\n"
                          "/change_userdata - Изменить Ваши данные\n")

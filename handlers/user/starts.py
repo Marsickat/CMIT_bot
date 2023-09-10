@@ -70,6 +70,7 @@ async def process_confirm_yes(message: Message, state: FSMContext, sessionmaker:
                        sessionmaker)
     await message.answer("Спасибо! Я запомнил.\n\n",
                          reply_markup=ReplyKeyboardRemove())
+    await message.answer("Теперь Вы можете отправить команду /menu для отображения доступных команд")
 
 
 @router.message(RegisterState.confirm, F.text.casefold() == "нет")

@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command, or_f
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 import keyboards as kb
 from database import orm
 from states import CreateRequestState
+from utils.send_request import send_request
 
 router = Router()
 
@@ -34,19 +35,21 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
     await message.answer("Хорошо. Давайте сверим данные:\n\n"
                          f"<b>Отправитель:</b> {user.name}\n"
                          f"<b>Кабинет/отделение:</b> {user.department}\n"
-                         f"<b>Текст заявки:</b> {message.text}\n\n"
+                         "<b>Текст заявки:</b>\n"
+                         f"{message.text}\n\n"
                          "Всё верно?",
                          reply_markup=kb.reply.yes_no())
 
 
 @router.message(CreateRequestState.confirm, F.text.casefold() == "да")
-async def process_confirm_yes(message: Message, state: FSMContext, sessionmaker: async_sessionmaker):
+async def process_confirm_yes(message: Message, bot: Bot, state: FSMContext, sessionmaker: async_sessionmaker):
     data = await state.get_data()
     await state.clear()
     await orm.add_request(message.from_user.id, data["description"], sessionmaker)
     request = await orm.get_requests(message.from_user.id, sessionmaker)
     await message.answer(f"Ваша заявка создана под номером <b>{request.request_id}</b>",
                          reply_markup=ReplyKeyboardRemove())
+    await send_request(bot, message.from_user.id, sessionmaker)
 
 
 @router.message(CreateRequestState.confirm, F.text.casefold() == "нет")
