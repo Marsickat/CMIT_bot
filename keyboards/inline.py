@@ -3,14 +3,15 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy.orm.collections import InstrumentedList
 
 from callbacks.classes import RequestCallback
-from utils import RequestStatus
 
 
-def active_requests(requests: InstrumentedList) -> InlineKeyboardMarkup:
+def active_requests(requests: InstrumentedList, media: bool, media_id: int) -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
     for request in requests:
-        if request.status != RequestStatus.completed:
-            builder.button(text=f"Заявка №{request.request_id}, статус - {request.status}",
-                           callback_data=RequestCallback(action="view", id=request.request_id))
+        builder.button(text=f"Заявка №{request.request_id}, статус - {request.status}",
+                       callback_data=RequestCallback(action="view", media=False, id=request.request_id))
+    if media:
+        builder.button(text="Отправить прикрепленный к заявке медиафайл",
+                       callback_data=RequestCallback(action="view", media=True, id=media_id))
     builder.adjust(1)
     return builder.as_markup()

@@ -7,10 +7,14 @@ from database import orm
 
 async def send_request(bot: Bot, user_id: int, sessionmaker: async_sessionmaker):
     user = await orm.get_user(user_id, sessionmaker)
+    request = user.requests[-1]
+    text = f"Заявка номер {request.request_id}\n\n"
+    text += f"<b>Отправитель:</b> {user.name}\n"
+    text += f"<b>Кабинет/отделение:</b> {user.department}\n"
+    text += "<b>Текст заявки:</b>\n"
+    text += f"{request.req_description}"
     for admin in config.admins:
-        await bot.send_message(admin,
-                               f"Заявка номер {user.requests[-1].request_id}\n\n"
-                               f"<b>Отправитель:</b> {user.name}\n"
-                               f"<b>Кабинет/отделение:</b> {user.department}\n"
-                               "<b>Текст заявки:</b>\n"
-                               f"{user.requests[-1].description}")
+        if request.photo_id:
+            await bot.send_photo(admin, request.photo_id, caption=text)
+        else:
+            await bot.send_message(admin, text)

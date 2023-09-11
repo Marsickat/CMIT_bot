@@ -7,10 +7,14 @@ from database.models import UserModel, RequestModel
 from utils import RequestStatus
 
 
-async def add_request(user_id: int, description: str, sessionmaker: async_sessionmaker):
+async def add_request(user_id: int, req_description: str, photo_id: Optional[str], video_id: Optional[str],
+                      sessionmaker: async_sessionmaker):
     async with sessionmaker() as session:
         user = await session.get(UserModel, user_id)
-        request = RequestModel(description=description, status=RequestStatus.in_queue)
+        request = RequestModel(req_description=req_description,
+                               photo_id=photo_id,
+                               video_id=video_id,
+                               status=RequestStatus.in_queue)
         user.requests.append(request)
         await session.commit()
 
@@ -24,7 +28,7 @@ async def add_user(user_id: int, username: Optional[str], first_name: Optional[s
                               last_name=last_name,
                               name=name,
                               department=department,
-                              requests=[RequestModel(description="Тестовый запрос",
+                              requests=[RequestModel(req_description="Тестовый запрос",
                                                      status=RequestStatus.completed,
                                                      completion_time=datetime.now())]))
         await session.commit()
@@ -36,6 +40,16 @@ async def change_userdata(user_id: int, name: str, department: str, sessionmaker
         user.name = name
         user.department = department
         await session.commit()
+
+
+async def get_active_requests(user_id: int, sessionmaker: async_sessionmaker):
+    async with sessionmaker() as session:
+        user = await session.get(UserModel, user_id)
+    requests = []
+    for request in user.requests:
+        if request.status != RequestStatus.completed:
+            requests.append(request)
+    return requests
 
 
 async def get_request(request_id: int, sessionmaker: async_sessionmaker):

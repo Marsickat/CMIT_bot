@@ -52,7 +52,7 @@ async def process_department(message: Message, state: FSMContext):
     await state.set_state(RegisterState.confirm)
     await message.answer("Отлично! Давайте проверим информацию.\n\n"
                          f"Ваше имя: {data['name']}\n"
-                         f"Ваше подразделение: {message.text}\n\n"
+                         f"Ваш кабинет/отделение: {message.text}\n\n"
                          "Всё верно?",
                          reply_markup=kb.reply.yes_no())
 
