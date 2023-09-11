@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 import keyboards as kb
 from database import orm
 from states import CreateRequestState
-from utils import answer_text
-from utils import send_request
+from utils import answer_text, send_request
 
 router = Router()
 
@@ -33,14 +32,10 @@ async def cancel_create_request(message: Message, state: FSMContext):
 async def process_description(message: Message, state: FSMContext, sessionmaker: async_sessionmaker):
     user = await orm.get_user(message.from_user.id, sessionmaker)
     text = "Хорошо. Давайте сверим данные:\n\n"
-    # text += f"<b>Отправитель:</b> {user.name}\n"
-    # text += f"<b>Кабинет/отделение:</b> {user.department}\n"
-    # text += "<b>Текст заявки:</b>\n"
     if message.photo:
         description = message.caption
         photo_id = message.photo[-1].file_id
         text += answer_text(user.name, user.department, message.caption)
-        # text += f"{message.caption}\n\n"
         text += "\n\nВсё верно?"
         await state.update_data(description=description, photo_id=photo_id, video_id=None)
         await message.answer_photo(message.photo[-1].file_id,
@@ -50,7 +45,6 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
         description = message.caption
         video_id = message.video.file_id
         text += answer_text(user.name, user.department, message.caption)
-        # text += f"{message.caption}\n\n"
         text += "\n\nВсё верно?"
         await state.update_data(description=description, photo_id=None, video_id=video_id)
         await message.answer_video(message.video.file_id,
@@ -59,7 +53,6 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
     else:
         await state.update_data(description=message.text, photo_id=None, video_id=None)
         text += answer_text(user.name, user.department, message.text)
-        # text += f"{message.text}\n\n"
         text += "\n\nВсё верно?"
         await message.answer(text,
                              reply_markup=kb.reply.yes_no())

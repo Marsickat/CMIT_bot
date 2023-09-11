@@ -29,11 +29,14 @@ async def send_photo_request(callback: CallbackQuery, callback_data: RequestCall
     if request.photo_id:
         await callback.message.answer_photo(request.photo_id,
                                             caption=f"Фотография из заявки №{request.request_id}")
+        await callback.answer()
     elif request.video_id:
         await callback.message.answer_video(request.video_id,
                                             caption=f"Видео из заявки №{request.request_id}")
+        await callback.answer()
     else:
         await callback.message.answer(f"У заявки №{request.request_id} нет медиафайла")
+        await callback.answer()
 
 
 @router.callback_query(RequestCallback.filter())

@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
 
@@ -16,7 +17,7 @@ async def main():
     # Инициализация
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s")
-    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode="HTML")
+    bot = Bot(token=config.bot_token.get_secret_value(), parse_mode=ParseMode.HTML)
 
     # Выбор хранилища
     dp = Dispatcher(storage=MemoryStorage())

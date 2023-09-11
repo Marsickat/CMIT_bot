@@ -12,4 +12,5 @@ async def cmd_menu(message: Message):
                          "/check_requests - Посмотреть активные заявки\n"
                          "/check_request <b>N</b> - Посмотреть информацию о конкретной заявке, "
                          "где <b>N</b> - номер заявки\n"
-                         "/change_userdata - Изменить Ваши данные\n")
+                         "/change_userdata - Изменить Ваши данные\n"
+                         "/issue - Отправить пожелание по улучшению бота")
