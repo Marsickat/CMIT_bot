@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from sqlalchemy import ColumnElement, Result
 
@@ -34,3 +34,20 @@ def active_requests(requests: Result[tuple[RequestModel]] | list[ColumnElement],
                                                      id=media_id))
     builder.adjust(1)
     return builder.as_markup()
+
+
+def take_request(request_id: int) -> InlineKeyboardMarkup:
+    """
+    Функция для формирования inline-клавиатуры с кнопкой для принятия заявки.
+
+    :param request_id: ID заявки.
+    :type request_id: int
+
+    :return: Inline-клавиатура с кнопкой для принятия заявки.
+    :rtype: InlineKeyboardMarkup
+    """
+    keyboard = [
+        [InlineKeyboardButton(text="Принять заявку",
+                              callback_data=f"request_{request_id}")]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)

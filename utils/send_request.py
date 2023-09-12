@@ -1,6 +1,7 @@
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
+import keyboards as kb
 from config import config
 from database import orm
 from utils import answer_text
@@ -9,7 +10,8 @@ from utils import answer_text
 async def send_request(bot: Bot, user_id: int, sessionmaker: async_sessionmaker) -> None:
     """
     Функция для отправки заявки администраторам при ее создании.
-    Функция получает данные пользователя из базы данных, формирует текст заявки и отправляет его администраторам.
+    Функция получает данные пользователя из базы данных, формирует текст заявки и отправляет его администраторам,
+    прикрепляя inline-кнопку для принятия заявки.
 
     :param bot: Объект бота.
     :type bot: Bot
@@ -34,11 +36,14 @@ async def send_request(bot: Bot, user_id: int, sessionmaker: async_sessionmaker)
         if request.photo_id:
             await bot.send_photo(chat_id=admin,
                                  photo=request.photo_id,
-                                 caption=text)
+                                 caption=text,
+                                 reply_markup=kb.inline.take_request(request_id=request.request_id))
         elif request.video_id:
             await bot.send_video(chat_id=admin,
                                  video=request.video_id,
-                                 caption=text)
+                                 caption=text,
+                                 reply_markup=kb.inline.take_request(request_id=request.request_id))
         else:
             await bot.send_message(chat_id=admin,
-                                   text=text)
+                                   text=text,
+                                   reply_markup=kb.inline.take_request(request_id=request.request_id))

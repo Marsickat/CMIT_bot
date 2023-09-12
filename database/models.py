@@ -10,21 +10,14 @@ class UserModel(BaseModel):
     """
     Модель данных для представления пользователей в базе данных.
 
-    :param user_id: Уникальный ID пользователя в Telegram.
-    :type user_id: int
-    :param username: Username пользователя в Telegram.
-    :type username: str
-    :param first_name: Имя пользователя в Telegram.
-    :type first_name: str
-    :param last_name: Фамилия пользователя в Telegram.
-    :type last_name: str
-    :param name: Имя, указанное пользователем при регистрации в базе данных.
-    :type name: str
-    :param department: Отделение, указанное пользователем при регистрации в базе данных.
-    :type department: str
-    :param requests: Заявки пользователя, связанные с таблицей Requests.
-    :type requests: list["RequestModel"]
-    :param registration_time: Время регистрации пользователя.
+    :ivar user_id: Уникальный ID пользователя в Telegram.
+    :ivar username: Username пользователя в Telegram.
+    :ivar first_name: Имя пользователя в Telegram.
+    :ivar last_name: Фамилия пользователя в Telegram.
+    :ivar name: Имя, указанное пользователем при регистрации в базе данных.
+    :ivar department: Отделение, указанное пользователем при регистрации в базе данных.
+    :ivar requests: Заявки пользователя, связанные с таблицей Requests.
+    :ivar registration_time: Время регистрации пользователя.
     :type registration_time: datetime
     """
     __tablename__ = "Users"
@@ -43,24 +36,16 @@ class RequestModel(BaseModel):
     """
     Модель данных для представления заявок пользователей в базе данных.
 
-    :param request_id: Уникальный ID заявки пользователя.
-    :type request_id: int
-    :param user: Пользователь, отправивший заявку, связанный с таблицей Users.
-    :type user: UserModel
-    :param user_fk: Внешний ключ в виде уникального ID для связи с пользователем.
-    :type user_fk: int
-    :param req_description: Описание заявки пользователя.
-    :type req_description: str
-    :param photo_id: ID фотографии, прикрепленной к заявке (при ее наличии).
-    :type photo_id: str
-    :param video_id: ID видео, прикрепленного к заявке (при его наличии).
-    :type video_id: str
-    :param status: Статус заявки пользователя ("В очереди"/"Выполняется"/"Выполнено").
-    :type status: str
-    :param creation_time: Время создания заявки.
-    :type creation_time: datetime
-    :param completion_time: Время выполнения заявки.
-    :type completion_time: datetime
+    :ivar request_id: Уникальный ID заявки пользователя.
+    :ivar user: Пользователь, отправивший заявку, связанный с таблицей Users.
+    :ivar user_fk: Внешний ключ в виде уникального ID для связи с пользователем.
+    :ivar req_description: Описание заявки пользователя.
+    :ivar photo_id: ID фотографии, прикрепленной к заявке (при ее наличии).
+    :ivar video_id: ID видео, прикрепленного к заявке (при его наличии).
+    :ivar status: Статус заявки пользователя ("В очереди"/"Выполняется"/"Выполнено").
+    :ivar executor: ID исполнителя заявки пользователя.
+    :ivar creation_time: Время создания заявки.
+    :ivar completion_time: Время выполнения заявки.
     """
     __tablename__ = "Requests"
 
@@ -71,5 +56,6 @@ class RequestModel(BaseModel):
     photo_id: Mapped[str] = mapped_column(default=None, nullable=True)
     video_id: Mapped[str] = mapped_column(default=None, nullable=True)
     status: Mapped[str] = mapped_column()
+    executor: Mapped[int] = mapped_column(BigInteger, default=None, nullable=True)
     creation_time: Mapped[datetime] = mapped_column(default=datetime.now())
     completion_time: Mapped[datetime] = mapped_column(nullable=True)

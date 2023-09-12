@@ -37,6 +37,25 @@ async def add_request(user_id: int, req_description: str, photo_id: Optional[str
         await session.commit()
 
 
+async def add_request_executor(user_id: int, request_id: int, sessionmaker: async_sessionmaker) -> None:
+    """
+    Функция для добавления исполнителя для заявки в базу данных.
+
+    :param user_id: Уникальный ID пользователя в Telegram.
+    :type user_id: int
+    :param request_id: ID заявки пользователя.
+    :type request_id: int
+    :param sessionmaker: Асинхронная фабрика для сессий.
+    :type sessionmaker: async_sessionmaker
+
+    :return: None
+    """
+    async with sessionmaker() as session:
+        request = await session.get(RequestModel, request_id)
+        request.executor = user_id
+        await session.commit()
+
+
 async def add_user(user_id: int, username: Optional[str], first_name: Optional[str], last_name: Optional[str],
                    name: str, department: str, sessionmaker: async_sessionmaker) -> None:
     """
