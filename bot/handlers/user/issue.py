@@ -1,12 +1,13 @@
+from os import getenv
+
 from aiogram import Router, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from config import config
+from bot.states import IssueState
 from database import orm
-from states import IssueState
 
 router = Router()
 
@@ -50,6 +51,6 @@ async def process_issue(message: Message, bot: Bot, state: FSMContext, sessionma
                               sessionmaker=sessionmaker)
     text = f"Предложение от {user.name} из {user.department}\n\n{message.text}"
     await state.clear()
-    await bot.send_message(chat_id=config.main_admin,
+    await bot.send_message(chat_id=int(getenv("MAIN_ADMIN")),
                            text=text)
     await message.answer(text="Ваше предложение по улучшению было отправлено")

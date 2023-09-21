@@ -1,12 +1,12 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from sqlalchemy import ColumnElement, Result
+from sqlalchemy import ColumnElement, Result, ScalarResult
 
-from callbacks.classes import RequestCallback
+from bot.callbacks.classes import RequestCallback
 from database.models import RequestModel
 
 
-def active_requests(requests: Result[tuple[RequestModel]] | list[ColumnElement], media: bool,
+def active_requests(requests: ScalarResult[RequestModel] | list[ColumnElement], media: bool,
                     media_id: int) -> InlineKeyboardMarkup:
     """
     Функция для формирования inline-клавиатуры с активными заявками.

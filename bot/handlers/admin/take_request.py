@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import CallbackQuery
 from aiogram.utils.markdown import hlink
 from sqlalchemy.ext.asyncio import async_sessionmaker
 

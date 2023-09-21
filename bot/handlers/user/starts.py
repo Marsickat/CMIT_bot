@@ -4,9 +4,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-import keyboards as kb
+from bot import keyboards as kb
+from bot.states.register_state import RegisterState
 from database import orm
-from states.register_state import RegisterState
 
 router = Router()
 
@@ -76,10 +76,13 @@ async def process_name(message: Message, state: FSMContext):
     :param state: Состояние с данными.
     :type state: FSMContext
     """
-    await state.update_data(name=message.text)
-    await state.set_state(state=RegisterState.department)
-    await message.answer(text="Хорошо. Из какого Вы кабинета/отделения?",
-                         reply_markup=kb.reply.cancel_registration())
+    if message.text is None:
+        await message.reply(text="К сожалению, я не нашел текста в сообщении. Попробуйте еще раз.")
+    else:
+        await state.update_data(name=message.text)
+        await state.set_state(state=RegisterState.department)
+        await message.answer(text="Хорошо. Из какого Вы кабинета/отделения?",
+                             reply_markup=kb.reply.cancel_registration())
 
 
 @router.message(RegisterState.department)
@@ -95,14 +98,17 @@ async def process_department(message: Message, state: FSMContext):
     :param state: Состояние с данными.
     :type state: FSMContext
     """
-    await state.update_data(department=message.text)
-    data = await state.get_data()
-    await state.set_state(state=RegisterState.confirm)
-    await message.answer(text="Отлично! Давайте проверим информацию.\n\n"
-                              f"Ваше имя: {data['name']}\n"
-                              f"Ваш кабинет/отделение: {message.text}\n\n"
-                              "Всё верно?",
-                         reply_markup=kb.reply.yes_no())
+    if message.text is None:
+        await message.reply(text="К сожалению, я не нашел текста в сообщении. Попробуйте еще раз.")
+    else:
+        await state.update_data(department=message.text)
+        data = await state.get_data()
+        await state.set_state(state=RegisterState.confirm)
+        await message.answer(text="Отлично! Давайте проверим информацию.\n\n"
+                                  f"Ваше имя: {data['name']}\n"
+                                  f"Ваш кабинет/отделение: {message.text}\n\n"
+                                  "Всё верно?",
+                             reply_markup=kb.reply.yes_no())
 
 
 @router.message(RegisterState.confirm, F.text.casefold() == "да")

@@ -1,10 +1,11 @@
+from os import getenv
+
 from aiogram import Bot
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-import keyboards as kb
-from config import config
+from bot import keyboards as kb
+from bot.utils import answer_text
 from database import orm
-from utils import answer_text
 
 
 async def send_request(bot: Bot, user_id: int, sessionmaker: async_sessionmaker) -> None:
@@ -32,7 +33,7 @@ async def send_request(bot: Bot, user_id: int, sessionmaker: async_sessionmaker)
                        description=request.req_description,
                        is_request_id=True,
                        is_status=False)
-    for admin in config.admins:
+    for admin in eval(getenv("ADMINS")):
         if request.photo_id:
             await bot.send_photo(chat_id=admin,
                                  photo=request.photo_id,

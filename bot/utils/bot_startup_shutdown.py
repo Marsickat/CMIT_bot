@@ -1,6 +1,6 @@
-from aiogram import Bot
+from os import getenv
 
-from config import config
+from aiogram import Bot
 
 
 async def send_message_startup(bot: Bot) -> None:
@@ -14,7 +14,7 @@ async def send_message_startup(bot: Bot) -> None:
     :return: None
     """
     text = "Бот запущен!\n\n"
-    for user in config.admins:
+    for user in eval(getenv("ADMINS")):
         await bot.send_message(user, text)
 
 
@@ -29,5 +29,5 @@ async def send_message_shutdown(bot: Bot) -> None:
     :return: None
     """
     text = "Бот остановлен\n\n"
-    for user in config.admins:
+    for user in eval(getenv("ADMINS")):
         await bot.send_message(user, text)

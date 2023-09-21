@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-import keyboards as kb
+from bot import keyboards as kb
 from database import orm
 
 router = Router()

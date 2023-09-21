@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+  redis:
+    build: database/redis
+    env_file:
+      - .env
+    volumes:
+      - redis-data:/data
+    restart: on-failure
+    ports:
+      - "6379:6379"
+    container_name: temp_redis
+  database:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: on-failure
+    ports:
+      - "5432:5432"
+    container_name: temp_postgres
+  dbeaver_cloud:
+    image: dbeaver/cloudbeaver
+    env_file:
+      - .env
+    restart: on-failure
+    ports:
+      - "8978:8978"
+    container_name: temp_dbeaver
+  bot:
+    build: .
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - database
+      - dbeaver_cloud
+      - redis
+    container_name: temp_bot
+
+
+volumes:
+  pgdata:
+  redis-data:

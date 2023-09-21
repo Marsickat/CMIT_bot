@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import select, ColumnElement, Result
+from sqlalchemy import select, ColumnElement, ScalarResult
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm.collections import InstrumentedList
 
 from database.models import UserModel, RequestModel
-from utils import RequestStatus
+from bot.utils import RequestStatus
 
 
 async def add_request(user_id: int, req_description: str, photo_id: Optional[str], video_id: Optional[str],
@@ -134,7 +134,7 @@ async def get_active_requests(user_id: int, sessionmaker: async_sessionmaker) ->
     return requests
 
 
-async def get_all_active_requests(sessionmaker: async_sessionmaker) -> Result[tuple[RequestModel]]:
+async def get_all_active_requests(sessionmaker: async_sessionmaker) -> ScalarResult[RequestModel]:
     """
     Функция для получения всех активных заявок пользователей из базы данных.
 
@@ -142,10 +142,11 @@ async def get_all_active_requests(sessionmaker: async_sessionmaker) -> Result[tu
     :type sessionmaker: async_sessionmaker
 
     :return: Список активных заявок пользователя.
-    :rtype: Result[tuple[RequestModel]]
+    :rtype: ScalarResult[RequestModel]
     """
     async with sessionmaker() as session:
-        return await session.execute(select(RequestModel).where(RequestModel.status != RequestStatus.completed))
+        requests = await session.execute(select(RequestModel).where(RequestModel.status != RequestStatus.completed))
+        return requests.scalars()
 
 
 async def get_request(request_id: int, sessionmaker: async_sessionmaker) -> Optional[RequestModel]:
@@ -193,6 +194,5 @@ async def get_user(user_id: int, sessionmaker: async_sessionmaker) -> Optional[U
     :return: Список активных заявок пользователя.
     :rtype: Optional[RequestModel]
     """
-    # user = (await session.execute(select(UserModel).filter_by(user_id=user_id))).scalar_one_or_none()
     async with sessionmaker() as session:
         return await session.get(UserModel, user_id)

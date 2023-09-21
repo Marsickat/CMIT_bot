@@ -4,10 +4,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-import keyboards as kb
+from bot import keyboards as kb
+from bot.states import CreateRequestState
+from bot.utils import answer_text, send_request
 from database import orm
-from states import CreateRequestState
-from utils import answer_text, send_request
 
 router = Router()
 
@@ -78,14 +78,12 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
                             name=user.name,
                             department=user.department,
                             status=None,
-                            description=message.caption,
+                            description=description,
                             is_request_id=False,
                             is_status=False)
         text += "\n\nВсё верно?"
         await state.update_data(description=description, photo_id=photo_id, video_id=None)
-        await message.answer_photo(photo=message.photo[-1].file_id,
-                                   caption=text,
-                                   reply_markup=kb.reply.yes_no())
+        await message.answer_photo(photo=photo_id, caption=text, reply_markup=kb.reply.yes_no())
     elif message.video:
         description = message.caption
         video_id = message.video.file_id
@@ -93,26 +91,23 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
                             name=user.name,
                             department=user.department,
                             status=None,
-                            description=message.caption,
+                            description=description,
                             is_request_id=False,
                             is_status=False)
         text += "\n\nВсё верно?"
         await state.update_data(description=description, photo_id=None, video_id=video_id)
-        await message.answer_video(video=message.video.file_id,
-                                   caption=text,
-                                   reply_markup=kb.reply.yes_no())
+        await message.answer_video(video=video_id, caption=text, reply_markup=kb.reply.yes_no())
     else:
-        await state.update_data(description=message.text, photo_id=None, video_id=None)
         text += answer_text(request_id=None,
                             name=user.name,
                             department=user.department,
                             status=None,
-                            description=message.caption,
+                            description=message.text,
                             is_request_id=False,
                             is_status=False)
         text += "\n\nВсё верно?"
-        await message.answer(text=text,
-                             reply_markup=kb.reply.yes_no())
+        await state.update_data(description=message.text, photo_id=None, video_id=None)
+        await message.answer(text=text, reply_markup=kb.reply.yes_no())
 
 
 @router.message(CreateRequestState.confirm, F.text.casefold() == "да")

@@ -3,10 +3,10 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-import callbacks as cb
-import keyboards as kb
+from bot import callbacks as cb
+from bot import keyboards as kb
+from bot.utils import answer_text
 from database import orm
-from utils import answer_text
 
 router = Router()
 
