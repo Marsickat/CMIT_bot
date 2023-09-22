@@ -1,4 +1,5 @@
 from aiogram import Router, F
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, CallbackQuery, ReplyKeyboardRemove
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -97,11 +98,17 @@ async def check_request_cb(callback: CallbackQuery, callback_data: cb.RequestCal
                        description=request.req_description,
                        is_request_id=True,
                        is_status=True)
-    await callback.message.edit_text(text=text,
-                                     reply_markup=kb.inline.active_requests(requests=requests,
-                                                                            media=True,
-                                                                            media_id=callback_data.id))
-    await callback.answer(text=f"Информация о заявке №{request.request_id}")
+    try:
+        await callback.message.edit_text(text=text,
+                                         reply_markup=kb.inline.active_requests(
+                                             requests=requests,
+                                             media=request.photo_id or request.video_id,
+                                             media_id=callback_data.id)
+                                         )
+    except TelegramBadRequest:
+        pass
+    finally:
+        await callback.answer(text=f"Информация о заявке №{request.request_id}")
 
 
 @router.message(Command("check_request"))

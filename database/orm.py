@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import select, ColumnElement, ScalarResult
+from sqlalchemy import select, ColumnElement
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm.collections import InstrumentedList
 
-from database.models import UserModel, RequestModel
 from bot.utils import RequestStatus
+from database.models import UserModel, RequestModel
 
 
 async def add_request(user_id: int, req_description: str, photo_id: Optional[str], video_id: Optional[str],
@@ -134,7 +134,7 @@ async def get_active_requests(user_id: int, sessionmaker: async_sessionmaker) ->
     return requests
 
 
-async def get_all_active_requests(sessionmaker: async_sessionmaker) -> ScalarResult[RequestModel]:
+async def get_all_active_requests(sessionmaker: async_sessionmaker) -> list[RequestModel]:
     """
     Функция для получения всех активных заявок пользователей из базы данных.
 
@@ -142,11 +142,12 @@ async def get_all_active_requests(sessionmaker: async_sessionmaker) -> ScalarRes
     :type sessionmaker: async_sessionmaker
 
     :return: Список активных заявок пользователя.
-    :rtype: ScalarResult[RequestModel]
+    :rtype: list[RequestModel]
     """
     async with sessionmaker() as session:
-        requests = await session.execute(select(RequestModel).where(RequestModel.status != RequestStatus.completed))
-        return requests.scalars()
+        requests = [request for request in (await session.execute(
+            select(RequestModel).where(RequestModel.status != RequestStatus.completed))).scalars()]
+        return requests
 
 
 async def get_request(request_id: int, sessionmaker: async_sessionmaker) -> Optional[RequestModel]:
