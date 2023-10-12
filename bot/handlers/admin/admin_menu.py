@@ -16,4 +16,5 @@ async def cmd_admin_menu(message: Message):
     :type message: Message
     """
     await message.answer(text="Список доступных команд:\n\n"
-                              "/active_requests - Посмотреть все активные заявки\n")
+                              "/all_active_requests - Посмотреть все активные заявки\n"
+                              "/my_active_requests - Посмотреть мои активные заявки")

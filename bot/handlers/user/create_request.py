@@ -69,9 +69,12 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
     """
     user = await orm.get_user(user_id=message.from_user.id,
                               sessionmaker=sessionmaker)
-    await state.set_state(state=CreateRequestState.confirm)
     text = "Хорошо. Давайте сверим данные:\n\n"
     if message.photo:
+        if not message.caption:
+            await message.answer(
+                text="Отсутствует текстовое описание проблемы, опишите её в сообщении к прикрепляемому файлу")
+            return
         description = message.caption
         photo_id = message.photo[-1].file_id
         text += answer_text(request_id=None,
@@ -85,6 +88,10 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
         await state.update_data(description=description, photo_id=photo_id, video_id=None)
         await message.answer_photo(photo=photo_id, caption=text, reply_markup=kb.reply.yes_no())
     elif message.video:
+        if not message.caption:
+            await message.answer(
+                text="Отсутствует текстовое описание проблемы, <b>ОПИШИТЕ ЕЁ В СООБЩЕНИИ К ПРИКРЕПЛЯЕМОМУ ФАЙЛУ</b>")
+            return
         description = message.caption
         video_id = message.video.file_id
         text += answer_text(request_id=None,
@@ -108,6 +115,7 @@ async def process_description(message: Message, state: FSMContext, sessionmaker:
         text += "\n\nВсё верно?"
         await state.update_data(description=message.text, photo_id=None, video_id=None)
         await message.answer(text=text, reply_markup=kb.reply.yes_no())
+    await state.set_state(state=CreateRequestState.confirm)
 
 
 @router.message(CreateRequestState.confirm, F.text.casefold() == "да")
@@ -134,10 +142,11 @@ async def process_confirm_yes(message: Message, bot: Bot, state: FSMContext, ses
                           photo_id=data["photo_id"],
                           video_id=data["video_id"],
                           sessionmaker=sessionmaker)
-    requests = await orm.get_active_requests(user_id=message.from_user.id,
+    requests = await orm.get_user_active_requests(user_id=message.from_user.id,
                                              sessionmaker=sessionmaker)
-    await message.answer(text=f"Ваша заявка создана под номером <b>{requests[-1].request_id}</b>",
-                         reply_markup=ReplyKeyboardRemove())
+    await message.answer(
+        text=f"Ваша заявка создана под номером <b>{requests[-1].request_id}</b> и будет выполнена в ближайшее время.",
+        reply_markup=ReplyKeyboardRemove())
     await send_request(bot=bot,
                        user_id=message.from_user.id,
                        sessionmaker=sessionmaker)

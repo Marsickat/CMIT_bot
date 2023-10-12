@@ -53,6 +53,7 @@ async def add_request_executor(user_id: int, request_id: int, sessionmaker: asyn
     async with sessionmaker() as session:
         request = await session.get(RequestModel, request_id)
         request.executor = user_id
+        request.status = RequestStatus.in_progress
         await session.commit()
 
 
@@ -113,7 +114,24 @@ async def change_userdata(user_id: int, name: str, department: str, sessionmaker
         await session.commit()
 
 
-async def get_active_requests(user_id: int, sessionmaker: async_sessionmaker) -> list[ColumnElement]:
+async def complete_request(request_id: int, sessionmaker: async_sessionmaker) -> None:
+    """
+    Функция для изменения статуса заявки на "Выполнено".
+
+    :param request_id: Уникальный ID заявки пользователя.
+    :type request_id: int
+    :param sessionmaker: Асинхронная фабрика для сессий.
+    :type sessionmaker: async_sessionmaker
+
+    :return: None
+    """
+    async with sessionmaker() as session:
+        request = await session.get(RequestModel, request_id)
+        request.status = RequestStatus.completed
+        await session.commit()
+
+
+async def get_user_active_requests(user_id: int, sessionmaker: async_sessionmaker) -> list[ColumnElement]:
     """
     Функция для получения активных заявок пользователя из базы данных.
 
@@ -132,6 +150,25 @@ async def get_active_requests(user_id: int, sessionmaker: async_sessionmaker) ->
         if request.status != RequestStatus.completed:
             requests.append(request)
     return requests
+
+
+async def get_admin_active_requests(user_id: int, sessionmaker: async_sessionmaker):
+    """
+    Функция для получения активных заявок администратора из базы данных.
+
+    :param user_id: Уникальный ID пользователя в Telegram.
+    :type user_id: int
+    :param sessionmaker: Асинхронная фабрика для сессий.
+    :type sessionmaker: async_sessionmaker
+
+    :return: Список активных заявок администратора.
+    :rtype: list[RequestModel]
+    """
+    async with sessionmaker() as session:
+        requests = [request for request in (await session.execute(
+            select(RequestModel).where(RequestModel.status == RequestStatus.in_progress).where(
+                RequestModel.executor == user_id))).scalars()]
+        return requests
 
 
 async def get_all_active_requests(sessionmaker: async_sessionmaker) -> list[RequestModel]:

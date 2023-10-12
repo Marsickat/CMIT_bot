@@ -9,7 +9,7 @@ router = Router()
 
 
 @router.callback_query(F.data.startswith("request_"))
-async def cmd_active_requests(callback: CallbackQuery, sessionmaker: async_sessionmaker):
+async def take_request(callback: CallbackQuery, sessionmaker: async_sessionmaker):
     """
     Функция для обработки запроса принятия заявки.
 
@@ -29,7 +29,7 @@ async def cmd_active_requests(callback: CallbackQuery, sessionmaker: async_sessi
         await orm.add_request_executor(user_id=callback.from_user.id,
                                        request_id=request_id,
                                        sessionmaker=sessionmaker)
-        await callback.message.answer(text="Вы приняли данную заявку")
+        await callback.message.answer(text=f"Вы приняли заявку №{request_id}")
         await callback.answer()
     else:
         user = await orm.get_user(user_id=int(request.executor),

@@ -17,8 +17,8 @@ async def cmd_check_request(message: Message, sessionmaker: async_sessionmaker):
     """
     Функция для обработки команды /check_requests.
 
-    Функция получает активные заявки всех пользователей из базы данных. При наличии заявок формируется текст сообщения
-    по каждой заявке, при отсутствии заявок выводится сообщение об их отсутствии. Также при наличии заявок формируется
+    Функция получает активные заявки пользователя из базы данных. При наличии заявок формируется текст сообщения по
+    каждой заявке, при отсутствии заявок выводится сообщение об их отсутствии. Также при наличии заявок формируется
     inline-клавиатура с кнопками, показывающими информацию о каждой заявке.
 
     :param message: Объект сообщения.
@@ -26,23 +26,23 @@ async def cmd_check_request(message: Message, sessionmaker: async_sessionmaker):
     :param sessionmaker: Асинхронная фабрика для сессий.
     :type sessionmaker: async_sessionmaker
     """
-    requests = await orm.get_active_requests(user_id=message.from_user.id,
-                                             sessionmaker=sessionmaker)
+    requests = await orm.get_user_active_requests(user_id=message.from_user.id,
+                                                  sessionmaker=sessionmaker)
     text = ""
     for request in requests:
         text += f"Заявка №{request.request_id}, статус - {request.status}\n"
     if text:
         await message.answer(text=text,
                              reply_markup=kb.inline.active_requests(requests=requests,
-                                                                    media=False,
-                                                                    media_id=0,
-                                                                    admin=False))
+                                                                    is_media=False,
+                                                                    is_request=False))
     else:
         await message.answer(text="У вас нет активных заявок")
 
 
 @router.callback_query(cb.RequestCallback.filter(F.media))
-async def send_request(callback: CallbackQuery, callback_data: cb.RequestCallback, sessionmaker: async_sessionmaker):
+async def send_request(callback: CallbackQuery, callback_data: cb.RequestCallback,
+                       sessionmaker: async_sessionmaker):
     """
     Функция для обработки callback-запроса inline-кнопки "Отправить прикрепленный к заявке медиафайл".
 
@@ -51,7 +51,7 @@ async def send_request(callback: CallbackQuery, callback_data: cb.RequestCallbac
 
     :param callback: Объект callback-запроса.
     :type callback: CallbackQuery
-    :param callback_data: Объект RequestCallback.
+    :param callback_data: Объект cb.RequestCallback.
     :type callback_data: cb.RequestCallback
     :param sessionmaker: Асинхронная фабрика для сессий.
     :type sessionmaker: async_sessionmaker
@@ -81,16 +81,13 @@ async def check_request_cb(callback: CallbackQuery, callback_data: cb.RequestCal
 
     :param callback: Объект callback-запроса.
     :type callback: CallbackQuery
-    :param callback_data: Объект RequestCallback.
+    :param callback_data: Объект cb.RequestCallback.
     :type callback_data: cb.RequestCallback
     :param sessionmaker: Асинхронная фабрика для сессий.
     :type sessionmaker: async_sessionmaker
     """
-    if callback_data.admin:
-        requests = await orm.get_all_active_requests(sessionmaker=sessionmaker)
-    else:
-        requests = await orm.get_active_requests(user_id=callback.from_user.id,
-                                                 sessionmaker=sessionmaker)
+    requests = await orm.get_user_active_requests(user_id=callback.from_user.id,
+                                                  sessionmaker=sessionmaker)
     request = await orm.get_request(request_id=callback_data.id,
                                     sessionmaker=sessionmaker)
     user = await orm.get_user(user_id=request.user_fk,
@@ -106,9 +103,10 @@ async def check_request_cb(callback: CallbackQuery, callback_data: cb.RequestCal
         await callback.message.edit_text(text=text,
                                          reply_markup=kb.inline.active_requests(
                                              requests=requests,
-                                             media=request.photo_id or request.video_id,
+                                             is_media=request.photo_id or request.video_id,
+                                             is_request=False,
                                              media_id=callback_data.id,
-                                             admin=callback_data.admin)
+                                             request_id=request.request_id)
                                          )
     except TelegramBadRequest:
         pass

@@ -8,9 +8,7 @@ class RequestCallback(CallbackData, prefix="reqfab"):
     :ivar action: Действие с заявкой.
     :ivar media: Флаг на наличие медиа в заявке.
     :ivar id: ID заявки.
-    :ivar admin: Флаг для проверки отправителя запроса.
     """
     action: str
     media: bool
     id: int
-    admin: bool
