@@ -7,7 +7,7 @@ from database.models import RequestModel
 
 
 def active_requests(requests: ScalarResult[RequestModel] | list[ColumnElement], media: bool,
-                    media_id: int) -> InlineKeyboardMarkup:
+                    media_id: int, admin: bool) -> InlineKeyboardMarkup:
     """
     Функция для формирования inline-клавиатуры с активными заявками.
 
@@ -15,8 +15,10 @@ def active_requests(requests: ScalarResult[RequestModel] | list[ColumnElement], 
     :type requests: Result[tuple[RequestModel]] | list[ColumnElement]
     :param media: Флаг для добавления inline-кнопки отправки прикрепленного к заявке медиафайла.
     :type media: bool
-    :param media_id: Номер заявки
+    :param media_id: Номер заявки.
     :type media_id: int
+    :param admin: Флаг для проверки отправителя запроса.
+    :type admin: bool
 
     :return: Inline-клавиатура с заявками и, возможно, кнопкой отправки прикрепленного к заявке медиафайла.
     :rtype: InlineKeyboardMarkup
@@ -26,12 +28,14 @@ def active_requests(requests: ScalarResult[RequestModel] | list[ColumnElement], 
         builder.button(text=f"Заявка №{request.request_id}, статус - {request.status}",
                        callback_data=RequestCallback(action="view",
                                                      media=False,
-                                                     id=request.request_id))
+                                                     id=request.request_id,
+                                                     admin=admin))
     if media:
         builder.button(text="Отправить прикрепленный к заявке медиафайл",
                        callback_data=RequestCallback(action="view",
                                                      media=True,
-                                                     id=media_id))
+                                                     id=media_id,
+                                                     admin=admin))
     builder.adjust(1)
     return builder.as_markup()
 

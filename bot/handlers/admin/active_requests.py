@@ -31,6 +31,7 @@ async def cmd_active_requests(message: Message, sessionmaker: async_sessionmaker
         await message.answer(text=text,
                              reply_markup=kb.inline.active_requests(requests=requests,
                                                                     media=False,
-                                                                    media_id=0))
+                                                                    media_id=0,
+                                                                    admin=True))
     else:
         await message.answer(text="В данный момент нет активных заявок")

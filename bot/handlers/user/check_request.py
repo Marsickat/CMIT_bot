@@ -35,7 +35,8 @@ async def cmd_check_request(message: Message, sessionmaker: async_sessionmaker):
         await message.answer(text=text,
                              reply_markup=kb.inline.active_requests(requests=requests,
                                                                     media=False,
-                                                                    media_id=0))
+                                                                    media_id=0,
+                                                                    admin=False))
     else:
         await message.answer(text="У вас нет активных заявок")
 
@@ -85,8 +86,11 @@ async def check_request_cb(callback: CallbackQuery, callback_data: cb.RequestCal
     :param sessionmaker: Асинхронная фабрика для сессий.
     :type sessionmaker: async_sessionmaker
     """
-    requests = await orm.get_active_requests(user_id=callback.from_user.id,
-                                             sessionmaker=sessionmaker)
+    if callback_data.admin:
+        requests = await orm.get_all_active_requests(sessionmaker=sessionmaker)
+    else:
+        requests = await orm.get_active_requests(user_id=callback.from_user.id,
+                                                 sessionmaker=sessionmaker)
     request = await orm.get_request(request_id=callback_data.id,
                                     sessionmaker=sessionmaker)
     user = await orm.get_user(user_id=request.user_fk,
@@ -103,7 +107,8 @@ async def check_request_cb(callback: CallbackQuery, callback_data: cb.RequestCal
                                          reply_markup=kb.inline.active_requests(
                                              requests=requests,
                                              media=request.photo_id or request.video_id,
-                                             media_id=callback_data.id)
+                                             media_id=callback_data.id,
+                                             admin=callback_data.admin)
                                          )
     except TelegramBadRequest:
         pass
